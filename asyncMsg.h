@@ -1,14 +1,3 @@
-/**
- * @file asyncMsg.h
- * @author cuican (cuican@reolinlk.com.cn)
- * @brief brief Asynchronous message sending and receiving template between the two threads
- * @version 0.1
- * @date 2022-10-13
- *
- * Copyright (c) 2022, Reolink.
- *
- */
-
 #ifndef __ASYNC_H__
 #define __ASYNC_H__
 #pragma once
@@ -18,6 +7,7 @@ using mill_sec = unsigned int;
 template <class T> class AsyncMsgQ {
   private:
     SAFE_STL::s_queue<T> m_queue;
+
   public:
     // 发数据，缓存至队列中
     bool asyncSend(const T& data)

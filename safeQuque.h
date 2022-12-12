@@ -1,13 +1,3 @@
-/**
- * @file safeQueue.h
- * @author cuican (cuican@reolinlk.com.cn)
- * @brief c++11 safe queue
- * @version 0.1
- * @date 2022-10-18
- *
- * Copyright (c) 2022, Reolink.
- *
- */
 #ifndef __SAFE_QUEUE__
 #define __SAFE_QUEUE__
 #pragma once
