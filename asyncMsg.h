@@ -1,5 +1,5 @@
-#ifndef __ASYNC_H__
-#define __ASYNC_H__
+#ifndef __ASYNC_MSG_H__
+#define __ASYNC_MSG_H__
 #pragma once
 #include "safeQuque.h"
 
@@ -26,6 +26,11 @@ template <class T> class AsyncMsgQ {
             return m_queue.wait_and_pop();
         }
     }
+    
+    bool isEmpty() const
+    {
+        return m_queue.empty();
+    }
 };
 
-#endif //__ASYNC_SENDER_H__
+#endif //__ASYNC_MSG_H__

@@ -1,7 +1,8 @@
 #include <stdio.h>
-#include "event.h"
 #include <thread>
 #include <string>
+#include "event.h"
+
 static void triggerCallback(void* args)
 {
     int* p = (int*) args;

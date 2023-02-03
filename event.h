@@ -64,6 +64,7 @@ class timeEvent {
         if (nullptr != _work_cb)
             _work_cb(); // TODO：执行结果没有返回给loop
     }
+
     void update_time(uint64_t curtime)
     {
         time_point = curtime + _timeout;
@@ -100,27 +101,38 @@ class EventScheduler {
     void addEvent(userEvent&& event)
     {
         m_eventQuque.asyncSend(event);
+        m_loopActive++;
     }
 
     void addTimeEvent(timeEvent* event)
     {
         m_timer_queue.push(event);
+        m_loopActive++;
     }
 
     void run_user_event()
     {
+        if (m_eventQuque.isEmpty())
+            return;
         auto ptr = m_eventQuque.asyncRecv(_TIME_OUT);
-        if (ptr) {
+        if (ptr)
+        {
             (*ptr).exec_cb_handle();
-        } else {
+            m_loopActive--;
+        }
+        else
+        {
             printf("[startMainLoop] time out!\n");
         }
     }
 
     void run_time_event()
     {
+        if (m_timer_queue.empty())
+            return;
         auto time_event = m_timer_queue.top();
-        if (time_event->time_point < m_loopTime) {
+        if (time_event->time_point < m_loopTime)
+        {
             // exec timer event callback
             time_event->exec_cb_handle();
 
@@ -134,6 +146,7 @@ class EventScheduler {
                     delete time_event;
                     time_event = nullptr;
                 }
+                m_loopActive--;
             }
         }
     }
@@ -147,6 +160,14 @@ class EventScheduler {
         }
 
         while (m_stopFlag == 0) {
+            // check active
+            if (m_loopActive <= 0)
+            { // 无事件时释放cpu
+                std::this_thread::sleep_for(std::chrono::milliseconds(20));
+                printf("wait for event, sleep for 20 ms\n");
+                continue;
+            }
+
             // update time
             m_loopTime = get_time();
 
@@ -155,6 +176,7 @@ class EventScheduler {
 
             // 执行用户实践
             run_user_event();
+
             m_loopStatus = LOOP_RUNNING;
         }
 
@@ -170,6 +192,7 @@ class EventScheduler {
   private:
     uint64_t m_loopTime;
     volatile std::atomic<bool> m_stopFlag;
+    volatile std::atomic<int> m_loopActive;
     AsyncMsgQ<userEvent> m_eventQuque; // 事件队列
 
     LOOP_STAT m_loopStatus;

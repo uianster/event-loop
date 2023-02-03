@@ -17,7 +17,7 @@ class s_queue {
     clean_cb m_cleancb;
 
   public:
-    s_queue() : m_cleancb(nullptr)
+    s_queue()
     {
         printf("SafeQueue default copy\n");
     }
@@ -29,29 +29,14 @@ class s_queue {
         printf("SafeQueue copy copy\n");
     }
 
-    s_queue(s_queue&& other) : m_cleancb(other.m_cleancb)
-    {
-        std::lock_guard<std::mutex> lk(other.m_qmtx);
-        m_native_queue = std::move(other.m_native_queue);
-        printf("SafeQueue move copy\n");
-    }
-
     ~s_queue()
     {
         printf("SafeQueue ~SafeQueue:%s\n",m_native_queue.size());
         while (m_native_queue.size()) {
             auto data = std::move(m_native_queue.front());
             m_native_queue.pop();
-            // if (m_cleancb) {
-            //     m_cleancb(data);
-            // }
         }
     }
-
-    // void set_clean_cb(clean_cb func)
-    // {
-    //     m_cleancb = func;
-    // }
 
     void push(T new_value)
     {
