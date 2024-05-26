@@ -122,43 +122,43 @@ private:
         // 关闭 epoll 文件描述符
         close(epoll_fd);
     }
-
     friend void startTaskScheduler(TaskScheduler& scheduler);
+
 };
 
 // 外部启动任务调度器的函数
 void startTaskScheduler(TaskScheduler& scheduler) {
     scheduler.schedulerLoop();
 }
-
 int main() {
-    TaskScheduler scheduler;
-
-    // 启动任务调度器
-    std::thread schedulerThread(startTaskScheduler, std::ref(scheduler));
-
-    // 添加一些任务到调度器
-    scheduler.addTask([](){ std::cout << "Timer Task 1 executed\n"; }, std::chrono::milliseconds(1000), TaskScheduler::TaskType::Timer);
-    scheduler.addTask([](){ std::cout << "Timer Task 2 executed\n"; }, std::chrono::milliseconds(5000), TaskScheduler::TaskType::Timer);
-
-    int socket_fd = 123; // 假设为某个套接字描述符
-    scheduler.addTask([&socket_fd]() {
-        // 处理网络事件
-        std::cout << "Network Task executed on socket " << socket_fd << "\n";
-        // 关闭套接字
-        close(socket_fd);
-    }, std::chrono::milliseconds(0), TaskScheduler::TaskType::Network);
-
     
-    scheduler.addTask([]()
-    { std::cout << "One-time Task executed\n"; 
-    }, std::chrono::milliseconds(3000), TaskScheduler::TaskType::OneTime);
+    // one thread
+    {
+        TaskScheduler scheduler;
 
-    std::this_thread::sleep_for(std::chrono::seconds(1000));
+        // 添加一些任务到调度器
+        scheduler.addTask([](){ std::cout << "Timer Task 1 executed\n"; }, std::chrono::milliseconds(1000), TaskScheduler::TaskType::Timer);
+        scheduler.addTask([](){ std::cout << "Timer Task 2 executed\n"; }, std::chrono::milliseconds(5000), TaskScheduler::TaskType::Timer);
 
-    // 停止调度器
-    scheduler.stopScheduler();
-    schedulerThread.join();
+        int socket_fd = 123; // 假设为某个套接字描述符
+        scheduler.addTask([&socket_fd]() {
+            // 处理网络事件
+            std::cout << "Network Task executed on socket " << socket_fd << "\n";
+            // 关闭套接字
+            close(socket_fd);
+        }, std::chrono::milliseconds(0), TaskScheduler::TaskType::Network);
+
+        
+        scheduler.addTask([]()
+        { std::cout << "One-time Task executed\n"; 
+        }, std::chrono::milliseconds(3000), TaskScheduler::TaskType::OneTime);
+
+        startTaskScheduler(scheduler);
+
+        // 停止调度器
+        scheduler.stopScheduler();
+    }
+
 
     return 0;
 }
